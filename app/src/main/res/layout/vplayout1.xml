@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#A2B5CD"
+    android:orientation="vertical">
+    <!--
+    控制变量：进水流量，温度，氧气传输速率，回流污泥量
+    被控量：溶解氧浓度(DO)，生物需氧量（BOD），化学需氧量COD，硝态氮浓度，底物浓度，混合物固体悬浮物浓度（MLSS）
+    -->
+    <Button
+        android:id="@+id/create_database"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="创建数据库"
+        />
+    <Button
+        android:id="@+id/add_data"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="本地修改数据库"
+        />
+    <Button
+        android:id="@+id/query_data"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="数据查询"
+        />
+    <Button
+        android:id="@+id/delete_data"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="删除已有数据"
+        />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Text"
+            />
+    </ScrollView>
+
+</LinearLayout>
