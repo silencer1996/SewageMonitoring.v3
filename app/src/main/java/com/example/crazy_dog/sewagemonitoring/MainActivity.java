@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.PagerAdapter;
@@ -20,9 +19,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.VideoView;
 import android.view.WindowManager;
 import android.view.SurfaceView;
 
@@ -31,16 +31,20 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+
 
 import java.util.ArrayList;
 import java.util.List;
-import java.io.File;
+
+import static org.opencv.imgproc.Imgproc.equalizeHist;
+
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,CameraBridgeViewBase.CvCameraViewListener2 {
 
     /*声明ViewPager相关变量*/
-    private View view1,view2;
+    private View view1,view2,view3;
     private ViewPager viewPager;
     private List<View> viewList;
     /*声明TextView*/
@@ -48,8 +52,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     /*数据库相关*/
     private MyDatabaseHelper dbHelper;
     /*视频播放相关*/
-    private JavaCameraView javaCameraView;
-    private Mat mRgba;
+    private JavaCameraView javaCameraView,javaCameraView2;
+    private Mat mRgba,mRgba2;
     private BaseLoaderCallback baseLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -78,10 +82,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LayoutInflater inflater=getLayoutInflater();
         view1=inflater.inflate(R.layout.vplayout1,null);
         view2=inflater.inflate(R.layout.vplayout2,null);
+        view3=inflater.inflate(R.layout.vplayout3,null);
         //数组赋值
         viewList=new ArrayList<View>();
         viewList.add(view1);
         viewList.add(view2);
+        viewList.add(view3);
         //保持屏幕常亮
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -130,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 ContentValues values=new ContentValues();
                 //开始组装第一条数据
                 values.put("time","5月4日");
-                values.put("flow","300L");
+                values.put("flow","0.30");
                 values.put("temperature",20);
                 values.put("PH",7.0);
                 values.put("BOD",7.0);
@@ -140,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 values.clear();
                 //开始组装第二条数据
                 values.put("time","5月5日");
-                values.put("flow","330L");
+                values.put("flow","0.45");
                 values.put("temperature",15);
                 values.put("PH",7.2);
                 values.put("BOD",7.0);
@@ -166,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         String flow=cursor.getString(cursor.getColumnIndex("flow"));
                         double temperature=cursor.getDouble(cursor.getColumnIndex("temperature"));
                         double PH =cursor.getDouble(cursor.getColumnIndex("PH"));
-                        data.append("时间"+time+"流量"+flow+"温度"+temperature+"PH"+PH+"\n");
+                        data.append("时间"+time+"水位"+flow+"温度"+temperature+"PH"+PH+"\n");
                     } while(cursor.moveToNext());
                 }
                 cursor.close();
@@ -183,40 +189,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
     //播放视频功能
-        Button play=(Button) view2.findViewById(R.id.play);
-        Button pause=(Button) view2.findViewById(R.id.pause);
-        Button replay=(Button) view2.findViewById(R.id.replay);
         javaCameraView = (JavaCameraView) view2.findViewById(R.id.javaCameraView);
         javaCameraView.setVisibility(SurfaceView.VISIBLE);
         javaCameraView.setCvCameraViewListener(this);
+        javaCameraView.enableFpsMeter();
 
-
-        //initVideoPath();
-
-        /*play.setOnClickListener(new View.OnClickListener() {
+    //View3网址访问
+        WebView webView= (WebView) view3.findViewById(R.id.webView);
+        webView.setWebViewClient(new WebViewClient(){
             @Override
-            public void onClick(View v) {
-                if(!videoView.isPlaying()){
-                    videoView.start();
-                }
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                //返回值是true的时候是控制网页在WebView中去打开，如果为false调用系统浏览器或第三方浏览器打开
+                view.loadUrl(url);
+                return true;
             }
+            //WebViewClient帮助WebView去处理一些页面控制和请求通知
         });
-        pause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(videoView.isPlaying()){
-                    videoView.pause();
-                }
-            }
-        });
-        replay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (videoView.isPlaying()){
-                    videoView.resume();
-                }
-            }
-        });*/
+        webView.loadUrl("http://localhost:60350/");
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -239,10 +229,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-        // C++方法实现示例部分1
-        /*TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());*/
     }
 
 
@@ -301,8 +287,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-        //c++方法实现示例部分2
-        /*public native String stringFromJNI();*/
+
     }
     //重写视频播放相关功能
     @Override
@@ -328,25 +313,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onCameraViewStopped() {
-
+        mRgba.release();
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRgba=inputFrame.rgba();
-        return mRgba;
+        //图片处理内容
+    /*                cvtColor(mRgba,mRgba,COLOR_RGBA2GRAY);
+                    equalizeHist(mRgba,mRgba);*/
+            List<Mat> imageRGB=new java.util.ArrayList<Mat>(3);
+            Core.split(mRgba,imageRGB);
+            for(int i=0;i<3;i++) {
+                equalizeHist(imageRGB.get(i), imageRGB.get(i));
+            }
+            Core.merge(imageRGB,mRgba);
+            for(int i=0;i<3;i++) {
+                imageRGB.get(i).release();
+            }
+            return mRgba;
     }
 
-/*    //子函数播放视频
-    private void initVideoPath(){
-        File file=new File(Environment.getExternalStorageDirectory(),"movie.mp4");
-        videoView.setVideoPath(file.getPath());
-    }
-    //@Override
-    protected void onDestory(){
-        super.onDestroy();
-        if(videoView!=null){
-            videoView.suspend();
-        }
-    }*/
 }
