@@ -14,11 +14,68 @@
         android:layout_width="match_parent"
         android:text="创建数据库"
         />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/time_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="时间"
+            />
+        <EditText
+            android:id="@+id/input_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="datetime"
+            android:text="2017/11/30 0:22:00"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/flow_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="流量(L/s)"
+            />
+        <EditText
+            android:id="@+id/input_flow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text="0.45"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/temperature_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="温度(℃)"
+            />
+        <EditText
+            android:id="@+id/input_temperature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:text="18"
+            />
+    </LinearLayout>
+
     <Button
         android:id="@+id/add_data"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:text="本地修改数据库"
+        android:text="修改数据库"
         />
     <Button
         android:id="@+id/query_data"
@@ -30,7 +87,7 @@
         android:id="@+id/delete_data"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:text="删除已有数据"
+        android:text="删除数据"
         />
     <ScrollView
         android:layout_width="match_parent"

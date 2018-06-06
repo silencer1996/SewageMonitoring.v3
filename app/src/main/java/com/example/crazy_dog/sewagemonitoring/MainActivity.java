@@ -8,6 +8,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,6 +25,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.view.WindowManager;
 import android.view.SurfaceView;
@@ -35,11 +39,14 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import static org.opencv.imgproc.Imgproc.COLOR_RGBA2GRAY;
+import static org.opencv.imgproc.Imgproc.cvtColor;
 import static org.opencv.imgproc.Imgproc.equalizeHist;
-
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -51,8 +58,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView data;
     /*数据库相关*/
     private MyDatabaseHelper dbHelper;
+    private Date input_time2=new Date();
+    private String input_flow,input_time;
+    private int input_temperature;
     /*视频播放相关*/
-    private JavaCameraView javaCameraView,javaCameraView2;
+    private JavaCameraView javaCameraView;
     private Mat mRgba,mRgba2;
     private BaseLoaderCallback baseLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -127,7 +137,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 dbHelper.getWritableDatabase();
             }
         });
+
         //本地修改数据库信息
+        final EditText time=(EditText) view1.findViewById(R.id.input_time);
+        EditText flow=(EditText) view1.findViewById(R.id.input_flow);
+        EditText temperature=(EditText) view1.findViewById(R.id.input_temperature);
+        input_time= time.getText().toString();
+        input_flow=flow.getText().toString();
+        input_temperature=Integer.parseInt(temperature.getText().toString());
         Button addData=(Button) view1.findViewById(R.id.add_data);
         addData.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 SQLiteDatabase db=dbHelper.getWritableDatabase();
                 ContentValues values=new ContentValues();
                 //开始组装第一条数据
-                values.put("time","5月4日");
+                values.put("time","2015/11/30 0:20:00");
                 values.put("flow","0.30");
                 values.put("temperature",20);
                 values.put("PH",7.0);
@@ -145,9 +162,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 db.insert("Water",null,values);
                 values.clear();
                 //开始组装第二条数据
-                values.put("time","5月5日");
-                values.put("flow","0.45");
-                values.put("temperature",15);
+                values.put("time",input_time);
+                values.put("flow",input_flow);
+                values.put("temperature",input_temperature);
                 values.put("PH",7.2);
                 values.put("BOD",7.0);
                 values.put("COD",7.0);
@@ -188,8 +205,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 data.setText("信息如下");
             }
         });
-    //播放视频功能
-        javaCameraView = (JavaCameraView) view2.findViewById(R.id.javaCameraView);
+
+        time.addTextChangedListener(new TextWatcher() {
+                                        @Override
+                                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                                        }
+                                        @Override
+                                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                                        }
+                                        @Override
+                                        public void afterTextChanged(Editable s) {
+                                            input_time=time.getText().toString();
+                                        }
+                                    });
+                //播放视频功能
+                javaCameraView = (JavaCameraView) view2.findViewById(R.id.javaCameraView);
         javaCameraView.setVisibility(SurfaceView.VISIBLE);
         javaCameraView.setCvCameraViewListener(this);
         javaCameraView.enableFpsMeter();
@@ -320,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRgba=inputFrame.rgba();
         //图片处理内容
-    /*                cvtColor(mRgba,mRgba,COLOR_RGBA2GRAY);
+/*                    cvtColor(mRgba,mRgba,COLOR_RGBA2GRAY);
                     equalizeHist(mRgba,mRgba);*/
             List<Mat> imageRGB=new java.util.ArrayList<Mat>(3);
             Core.split(mRgba,imageRGB);
@@ -333,5 +365,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
             return mRgba;
     }
+
 
 }
